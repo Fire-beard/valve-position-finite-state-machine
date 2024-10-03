@@ -1,6 +1,12 @@
 //state machine that reads IO and handles valve opened, closed, and transition
 //with failed to open and failed to close states based on timers\
 
+
+#include <stdio.h>
+#include <unistd.h>
+#include <stbool.h>
+
+
 enum valve_state {
     CLOSED,
     OPENED,
@@ -13,6 +19,15 @@ enum valve_event {
     OPEN_COMMAND,
     CLOSE_COMMAND
 };
+
+//booleans that light up panelboard indicator lights
+
+bool light_closed = false;
+bool light_opened = false;
+bool light_transition = false;
+bool light_failedtoopen = false;
+bool light_failedtoclose = false;
+
 enum valve_state valve_fsm(enum valve_state current_state, enum valve_event event, int timer_expired) {
     switch (current_state) {
     case CLOSED:
@@ -50,18 +65,46 @@ enum valve_state valve_fsm(enum valve_state current_state, enum valve_event even
     }
     return current_state;
 }
-#include <stdio.h>
-#include <unistd.h>
-#include <stbool.h>
 
-//booleans that light up panelboard indicator lights
-
-bool light_closed = false;
-bool light_opened = false;
-bool light_transition = false;
-bool light_failedtoopen = false;
-bool light_failedtoclose = false;
-
+void ind_lights(int valve_state)
+{
+	switch(valve_state)
+	case CLOSED: /*valve closed, CLOSED ind light on*/
+		light_closed = true;
+		light_opened = false;
+		light_transition = false;
+		light_failedtoopen = false;
+		light_failedtoclose = false; 
+		break;
+	case OPENED: /*valve opened, opened ind light on*/
+		light_closed = false;
+		light_opened = true;
+		light_transition = false;
+		light_failedtoopen = false;
+		light_failedtoclose = false; 
+		break;
+	case TRANSITION: /*valve transition, ind light on*/
+		light_closed = false;
+		light_opened = false;
+		light_transition = true;
+		light_failedtoopen = false;
+		light_failedtoclose = false; 
+		break;
+	case FAILED_TO_OPEN: /*valve failed to open, ind light on*/
+		light_closed = false;
+		light_opened = false;
+		light_transition = false;
+		light_failedtoopen = true;
+		light_failedtoclose = false; 
+		break;
+	case FAILED_TO_CLOSE: /*valve failed to close, ind light on*/
+		light_closed = false;
+		light_opened = false;
+		light_transition = false;
+		light_failedtoopen = false;
+		light_failedtoclose = true; 
+		break;
+};
 
 int main(void) {
     enum valve_state state = CLOSED;
@@ -83,8 +126,8 @@ int main(void) {
         }
 
         state = valve_fsm(state, event, timer_expired);
-    }
+	ind_lights(valve_state)
+    };
 
     return 0;
 }
-
