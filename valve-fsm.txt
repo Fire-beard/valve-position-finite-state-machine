@@ -1,0 +1,90 @@
+//state machine that reads IO and handles valve opened, closed, and transition
+//with failed to open and failed to close states based on timers\
+
+enum valve_state {
+    CLOSED,
+    OPENED,
+    TRANSITION,
+    FAILED_TO_OPEN,
+    FAILED_TO_CLOSE
+};
+enum valve_event {
+    TIMER_EXPIRED,
+    OPEN_COMMAND,
+    CLOSE_COMMAND
+};
+enum valve_state valve_fsm(enum valve_state current_state, enum valve_event event, int timer_expired) {
+    switch (current_state) {
+    case CLOSED:
+        if (event == OPEN_COMMAND) {
+            return TRANSITION;
+	    
+        }
+        break;
+    case OPENED:
+        if (event == CLOSE_COMMAND) {
+            return TRANSITION;
+        }
+        break;
+    case TRANSITION:
+        if (timer_expired) {
+            if (event == OPEN_COMMAND) {
+                return FAILED_TO_OPEN;
+            } else if (event == CLOSE_COMMAND) {
+                return FAILED_TO_CLOSE;
+            }
+        } else if (event == TIMER_EXPIRED) {
+            if (current_state == TRANSITION && event == OPEN_COMMAND) {
+                return OPENED;
+            } else if (current_state == TRANSITION && event == CLOSE_COMMAND) {
+                return CLOSED;
+            }
+        }
+        break;
+    case FAILED_TO_OPEN:
+    case FAILED_TO_CLOSE:
+	// Handle error
+        break;
+    default:
+        return CLOSED;
+    }
+    return current_state;
+}
+#include <stdio.h>
+#include <unistd.h>
+#include <stbool.h>
+
+//booleans that light up panelboard indicator lights
+
+bool light_closed = false;
+bool light_opened = false;
+bool light_transition = false;
+bool light_failedtoopen = false;
+bool light_failedtoclose = false;
+
+
+int main(void) {
+    enum valve_state state = CLOSED;
+    enum valve_event event;
+    int timer_expired = 0;
+
+    while (1) {
+        printf("Current state: %d\n", state);
+        sleep(1); // Simulate timer expiration
+        timer_expired = 1; // Simulate timer expiration
+
+        // Simulate events
+        if (state == CLOSED) {
+            event = OPEN_COMMAND;
+        } else if (state == OPENED) {
+            event = CLOSE_COMMAND;
+        } else {
+            event = TIMER_EXPIRED;
+        }
+
+        state = valve_fsm(state, event, timer_expired);
+    }
+
+    return 0;
+}
+
