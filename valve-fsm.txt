@@ -67,7 +67,8 @@ enum valve_state valve_fsm(enum valve_state current_state, enum valve_event even
     return current_state;
 }
 
-void ind_lights(int valve_state)
+#define LED_CLOSED 0
+#define LED_OPEN 1
 {
 	switch(valve_state)
 	case CLOSED: /*valve closed, CLOSED ind light on*/
