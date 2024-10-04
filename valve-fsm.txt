@@ -1,18 +1,34 @@
 //state machine that reads IO and handles valve opened, closed, and transition
-//with failed to open and failed to close states based on timers\
+//with failed to open and failed to close states based on timers/
+
+#include <stdio.h>
+#include <unistd.h>
+#include <stbool.h>
 
 enum valve_state {
-    CLOSED,
+    CLOSED = 0,
     OPENED,
     TRANSITION,
     FAILED_TO_OPEN,
     FAILED_TO_CLOSE
+    MAXIMUM_STATE_VAL /*this represents the maximum state
 };
 enum valve_event {
-    TIMER_EXPIRED,
+    TIMER_EXPIRED = 0,
     OPEN_COMMAND,
     CLOSE_COMMAND
+    MAXIMUM_STATE_VAL /*this represents the maximum state 
 };
+
+//bitfield that lights up panelboard indicator lights
+struct ind_light_bitfield {
+	u8_t light_closed : 1;
+	u8_t light_opened : 1;
+	u8_t light_transition : 1;
+	u8_t light_failedtoclose : 1;
+	u8_t light_failedtoopen : 1;
+};
+
 enum valve_state valve_fsm(enum valve_state current_state, enum valve_event event, int timer_expired) {
     switch (current_state) {
     case CLOSED:
@@ -50,18 +66,32 @@ enum valve_state valve_fsm(enum valve_state current_state, enum valve_event even
     }
     return current_state;
 }
-#include <stdio.h>
-#include <unistd.h>
-#include <stbool.h>
 
-//booleans that light up panelboard indicator lights
-
-bool light_closed = false;
-bool light_opened = false;
-bool light_transition = false;
-bool light_failedtoopen = false;
-bool light_failedtoclose = false;
-
+#define LED_CLOSED 0
+#define LED_OPEN 1
+{
+	switch(valve_state)
+	case CLOSED: /*valve closed, CLOSED ind light on*/
+		struct ind_light_bitfield = {0};
+		bf.light_closed = 1;
+		break;
+	case OPENED: /*valve opened, opened ind light on*/
+		struct ind_light_bitfield = {0};
+		bf.light_opened = 1;	
+		break;
+	case TRANSITION: /*valve transition, ind light on*/
+		struct ind_light_bitfield = {0};
+		bf.light_transition = 1;
+		break;
+	case FAILED_TO_OPEN: /*valve failed to open, ind light on*/
+		struct ind_light_bitfield = {0};
+		bf.light_failedtoopen = 1;
+		break;
+	case FAILED_TO_CLOSE: /*valve failed to close, ind light on*/
+		struct ind_light_bitfield = {0};
+		bf.light_failedtoclose = 1;
+		break;
+}
 
 int main(void) {
     enum valve_state state = CLOSED;
@@ -83,6 +113,7 @@ int main(void) {
         }
 
         state = valve_fsm(state, event, timer_expired);
+	ind_lights(valve_state)
     }
 
     return 0;
