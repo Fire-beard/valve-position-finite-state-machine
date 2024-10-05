@@ -10,25 +10,23 @@ enum valve_state {
     OPENED,
     TRANSITION,
     FAILED_TO_OPEN,
-    FAILED_TO_CLOSE
+    FAILED_TO_CLOSE,
     MAXIMUM_STATE_VAL /*this represents the maximum state
 };
 enum valve_event {
     TIMER_EXPIRED = 0,
     OPEN_COMMAND,
-    CLOSE_COMMAND
+    CLOSE_COMMAND,
     MAXIMUM_STATE_VAL /*this represents the maximum state 
 };
-
-//bitfield that lights up panelboard indicator lights
-struct ind_light_bitfield {
-	u8_t light_closed : 1;
-	u8_t light_opened : 1;
-	u8_t light_transition : 1;
-	u8_t light_failedtoclose : 1;
-	u8_t light_failedtoopen : 1;
+enum LED_LIGHTS
+    LED_CLOSED = 0,
+    LED_OPENED,
+    LED_TRANSITION,
+    LED_FAILEDTOOPEN,
+    LED_FAILEDTOCLOSE,
+    LED_MAXIMUM_STATE_VAL /*max state value
 };
-
 enum valve_state valve_fsm(enum valve_state current_state, enum valve_event event, int timer_expired) {
     switch (current_state) {
     case CLOSED:
@@ -66,33 +64,29 @@ enum valve_state valve_fsm(enum valve_state current_state, enum valve_event even
     }
     return current_state;
 }
-
-#define LED_CLOSED 0
-#define LED_OPEN 1
-{
-	switch(valve_state)
-	case CLOSED: /*valve closed, CLOSED ind light on*/
-		struct ind_light_bitfield = {0};
-		bf.light_closed = 1;
-		break;
-	case OPENED: /*valve opened, opened ind light on*/
-		struct ind_light_bitfield = {0};
-		bf.light_opened = 1;	
-		break;
-	case TRANSITION: /*valve transition, ind light on*/
-		struct ind_light_bitfield = {0};
-		bf.light_transition = 1;
-		break;
-	case FAILED_TO_OPEN: /*valve failed to open, ind light on*/
-		struct ind_light_bitfield = {0};
-		bf.light_failedtoopen = 1;
-		break;
-	case FAILED_TO_CLOSE: /*valve failed to close, ind light on*/
-		struct ind_light_bitfield = {0};
-		bf.light_failedtoclose = 1;
-		break;
-}
-
+void ind_lights_write(enum valve_state state) 
+{ 
+   enum LED_LIGHTS lights = 0;
+   switch (state) {
+	case CLOSED:
+	   lights = (1 << 0)
+	   break;
+	case OPENED:
+	   lights = (1 << 1)
+	   break;
+	case TRANSITION:
+	   lights = (1 << 2)
+	   break;
+	case FAILEDTOCLOSE:
+	   lights = (1 << 3)
+	   break;
+	case FAILEDTOOPENM:
+	   lights = (1 << 4)
+	   break;
+	default:
+	   printf("Error Invalid LED State/n")
+   return 0;
+}	
 int main(void) {
     enum valve_state state = CLOSED;
     enum valve_event event;
